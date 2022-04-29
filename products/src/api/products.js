@@ -1,8 +1,9 @@
 const ProductService = require('../services/product-service');
-const { PublishCustomerEvent, PublishShoppingEvent } = require('../utils');
+const { PublishCustomerEvent, PublishShoppingEvent, PublishMessage } = require('../utils');
 const UserAuth = require('./middlewares/auth')
+const {CUSTOMER_BINDING_KEY, SHOPPING_BINDING_KEY} = require('./../config')
 
-module.exports = (app) => {
+module.exports = (app,channel) => {
     
     const service = new ProductService();
 
@@ -70,7 +71,8 @@ module.exports = (app) => {
             
             const { data } = await  service.GetProductPayload(_id, { productId: req.body._id},'ADD_TO_WISHLIST') 
 
-            PublishCustomerEvent(data);
+            // PublishCustomerEvent(data);
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
            
             return res.status(200).json(data.data.product);
         } catch (err) {
@@ -87,7 +89,8 @@ module.exports = (app) => {
 
             const { data } = await  service.GetProductPayload(_id, { productId },'REMOVE_FROM_WISHLIST') 
 
-            PublishCustomerEvent(data);
+            // PublishCustomerEvent(data);
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
 
             return res.status(200).json(data.data.product);
 
@@ -105,8 +108,10 @@ module.exports = (app) => {
 
             const { data } = await  service.GetProductPayload(_id, { productId: req.body._id, qty: req.body.qty },'ADD_TO_CART') 
 
-            PublishCustomerEvent(data);
-            PublishShoppingEvent(data)
+            // PublishCustomerEvent(data);
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
+            PublishMessage(channel, SHOPPING_BINDING_KEY, JSON.stringify(data));
+            // PublishShoppingEvent(data)
 
             const response = {
                 product: data.data.product,
@@ -129,8 +134,10 @@ module.exports = (app) => {
 
             const { data } = await  service.GetProductPayload(_id, { productId },'REMOVE_FROM_CART') 
 
-            PublishCustomerEvent(data)
-            PublishShoppingEvent(data)
+            // PublishCustomerEvent(data)
+            // PublishShoppingEvent(data)
+            PublishMessage(channel, CUSTOMER_BINDING_KEY, JSON.stringify(data));
+            PublishMessage(channel, SHOPPING_BINDING_KEY, JSON.stringify(data));
                      
             const response = {
                 product: data.data.product,
